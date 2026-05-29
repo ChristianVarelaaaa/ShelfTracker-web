@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShelfTracker - Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="appPage">
+    <header>
+        <h3>ShelfTracker</h3>
+        <div id="authHeaderZone"></div>
+    </header>
+    
+    <nav>
+      <button class="active" onclick="window.location.href='index.html'">Dashboard</button>
+      <button onclick="window.location.href='stocks.html'">Stocks</button>
+      <button onclick="window.location.href='expiry.html'">Expiry</button>
+      <button id="settingsBtn" onclick="window.location.href='settings.html'">Settings</button>
+    </nav>
+    
+    <main>
+      <div id="dashboard" class="page">
+        <h2>Dashboard</h2>
+        <div class="card">
+          <h3>Product Status Overview</h3>
+          <p><span class="status-dot status-green"></span>High Stock</p>
+          <p><span class="status-dot status-yellow"></span>Low Stock</p>
+          <p><span class="status-dot status-red"></span>Near Expiry / Critical</p>
+        </div>
+        <div class="card">
+          <h3>Alerts</h3>
+          <div id="alertsList"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>

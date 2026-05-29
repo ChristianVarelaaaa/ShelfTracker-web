@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShelfTracker - Expiry Monitor</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="appPage" style="display: block;">
+    <header>
+      <h3>ShelfTracker</h3>
+      <div><span id="userRole"></span> | <button onclick="logout()" class="btn btn-danger">Logout</button></div>
+    </header>
+    
+    <nav>
+      <button onclick="window.location.href='index.html'">Dashboard</button>
+      <button onclick="window.location.href='stocks.html'">Stocks</button>
+      <button class="active" onclick="window.location.href='expiry.html'">Expiry</button>
+      <button id="settingsBtn" onclick="window.location.href='settings.html'">Settings</button>
+    </nav>
+    
+    <main>
+      <div id="expiry" class="page">
+        <h2>Expiry Monitor</h2>
+        <div class="card">
+          <table id="expiryTable">
+            <thead><tr><th>Product</th><th>Qty</th><th>Expiry Date</th><th>Days Left</th><th>Status</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>

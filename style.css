@@ -1,0 +1,317 @@
+:root { 
+  --green: #10b981;
+  --teal: #14b8a6;
+  --cyan: #06b6d4;
+  --blue: #3b82f6;
+  --red: #ef4444;
+  --bg: #f0fdfa;
+  --card: #ffffff;
+  --text: #0f172a;
+  --border: #ccfbf1;
+  --sidebar: #0f766e;
+  --sidebar-hover: #0d9488;
+  --font-base: 18px;
+  --font-sm: 16px;
+  --font-lg: 20px;
+  --font-xl: 24px;
+  --font-2xl: 32px;
+} 
+
+* { 
+  margin: 0; 
+  padding: 0; 
+  box-sizing: border-box; 
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
+} 
+
+body { 
+  background: var(--bg); 
+  color: var(--text); 
+  font-size: var(--font-base);
+  line-height: 1.7;
+} 
+
+/* LOGIN PAGE UNIQUE STYLES */
+#loginPage { 
+  display: flex; 
+  height: 100vh; 
+  justify-content: center; 
+  align-items: center; 
+  background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
+} 
+
+.login-box { 
+  background: var(--card); 
+  padding: 2.5rem; 
+  border-radius: 16px; 
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
+  width: 360px; 
+  border-top: 4px solid var(--teal);
+} 
+
+.login-box h2 { 
+  margin-bottom: 1.5rem; 
+  text-align: center; 
+  color: var(--sidebar);
+  font-weight: 700;
+  font-size: var(--font-2xl);
+} 
+
+.login-box input, .login-box select, .login-box button { 
+  width: 100%; 
+  padding: 14px; 
+  margin: 10px 0; 
+  border: 2px solid var(--border); 
+  border-radius: 10px; 
+  font-size: var(--font-base);
+  transition: all 0.2s;
+} 
+
+.login-box input:focus, .login-box select:focus {
+  outline: none;
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+}
+
+.login-box button { 
+  background: linear-gradient(135deg, var(--teal) 0%, var(--cyan) 100%); 
+  color: white; 
+  border: none; 
+  cursor: pointer; 
+  font-weight: 600;
+  font-size: 17px;
+} 
+
+.login-box button:hover { 
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(20, 184, 166, 0.3);
+} 
+
+/* APPLICATION CONTAINER */
+#appPage { 
+  display: block; /* Changed from none to support multi-page template loading */
+} 
+
+header { 
+  background: linear-gradient(90deg, var(--sidebar) 0%, var(--teal) 100%);
+  padding: 1.2rem 2rem; 
+  color: white;
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+} 
+
+header h3 {
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  font-size: 26px;
+}
+
+/* SIDEBAR NAVIGATION */
+nav { 
+  background: var(--sidebar); 
+  width: 240px; 
+  height: calc(100vh - 70px); 
+  position: fixed; 
+  padding: 1.5rem 1rem; 
+} 
+
+nav button { 
+  display: block; 
+  width: 100%; 
+  padding: 14px 18px; 
+  margin: 8px 0; 
+  border: none; 
+  background: none; 
+  text-align: left; 
+  cursor: pointer; 
+  border-radius: 10px; 
+  color: #ccfbf1;
+  font-weight: 500;
+  font-size: 18px;
+  transition: all 0.2s;
+} 
+
+nav button.active, nav button:hover { 
+  background: var(--sidebar-hover); 
+  color: white;
+  transform: translateX(4px);
+} 
+
+/* MAIN CONTENT BLOCKS */
+main { 
+  margin-left: 240px; 
+  padding: 2.5rem; 
+} 
+
+main h2 {
+  font-size: var(--font-2xl);
+  margin-bottom: 1.5rem;
+}
+
+.card { 
+  background: var(--card); 
+  padding: 2rem; 
+  border-radius: 14px; 
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06); 
+  margin-bottom: 1.8rem; 
+  border-left: 4px solid var(--teal);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+.card h3 {
+  color: var(--sidebar);
+  margin-bottom: 1.2rem;
+  font-size: 26px;
+}
+
+/* INTERACTIVE DATA TABLES */
+table { 
+  width: 100%; 
+  border-collapse: collapse; 
+} 
+
+th, td { 
+  padding: 16px 18px; 
+  text-align: left; 
+  border-bottom: 1px solid var(--border); 
+  font-size: 18px;
+} 
+
+th { 
+  background: #f0fdfa; 
+  color: var(--sidebar);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 16px;
+  letter-spacing: 0.5px;
+} 
+
+tr:hover {
+  background: #f0fdfa;
+}
+
+/* STOCK OVERVIEW SYSTEM DOTS */
+.status-dot { 
+  display: inline-block; 
+  width: 14px; 
+  height: 14px; 
+  border-radius: 50%; 
+  margin-right: 10px; 
+  box-shadow: 0 0 8px currentColor;
+} 
+
+.status-green { background: var(--green); color: var(--green); } 
+.status-yellow { background: var(--cyan); color: var(--cyan); } 
+.status-red { background: var(--red); color: var(--red); } 
+
+/* ACTION BUTTONS */
+.btn { 
+  padding: 12px 20px; 
+  border: none; 
+  border-radius: 10px; 
+  cursor: pointer; 
+  margin-right: 8px; 
+  font-weight: 600;
+  font-size: 18px;
+  transition: all 0.2s;
+} 
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.btn-primary { 
+  background: linear-gradient(135deg, var(--blue) 0%, var(--cyan) 100%); 
+  color: white; 
+} 
+
+.btn-danger { 
+  background: var(--red); 
+  color: white; 
+} 
+
+label {
+  font-size: var(--font-base);
+  font-weight: 500;
+  display: block;
+  margin-top: 12px;
+}
+
+input, select { 
+  padding: 14px; 
+  border: 2px solid var(--border); 
+  border-radius: 8px; 
+  width: 100%; 
+  margin-top: 6px; 
+  font-size: var(--font-base);
+  transition: all 0.2s;
+} 
+
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.1);
+}
+
+.error { 
+  color: var(--red); 
+  font-size: var(--font-sm);
+  margin-top: 16px; 
+} 
+
+/* MODAL CONTAINER DIALOGS */
+.modal { 
+  display: none; 
+  position: fixed; 
+  top:0; 
+  left:0; 
+  width:100%; 
+  height:100%; 
+  background: rgba(0,0,0,0.6); 
+  backdrop-filter: blur(4px);
+  justify-content:center; 
+  align-items:center; 
+  z-index: 10; 
+} 
+
+.modal.active { display: flex; } 
+
+.modal-content { 
+  background: white; 
+  padding: 2.5rem; 
+  border-radius: 16px; 
+  width: 420px; 
+  border-top: 4px solid var(--teal);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+} 
+
+.modal-content h3 {
+  font-size: 26px;
+  margin-bottom: 1.2rem;
+}
+
+/* SETTINGS VIEW PANEL */
+.setting-row { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  margin-bottom: 1.2rem; 
+  font-size: var(--font-base);
+} 
+
+.setting-row input { width: 120px; } 
+
+/* RESPONSIVE MEDIA BREAKPOINTS */
+@media(max-width: 768px) { 
+  nav { position: static; width: 100%; height: auto; } 
+  main { margin-left: 0; padding: 1.5rem; } 
+  .card { padding: 1.5rem; } 
+}

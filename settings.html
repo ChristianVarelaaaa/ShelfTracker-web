@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShelfTracker - Settings</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="appPage" style="display: block;">
+    <header>
+      <h3>ShelfTracker</h3>
+      <div><span id="userRole"></span> | <button onclick="logout()" class="btn btn-danger">Logout</button></div>
+    </header>
+    
+    <nav>
+      <button onclick="window.location.href='index.html'">Dashboard</button>
+      <button onclick="window.location.href='stocks.html'">Stocks</button>
+      <button onclick="window.location.href='expiry.html'">Expiry</button>
+      <button id="settingsBtn" class="active" onclick="window.location.href='settings.html'">Settings</button>
+    </nav>
+    
+    <main>
+      <div id="settings" class="page">
+        <h2>System Settings</h2>
+        <div class="card">
+          <h3>Alert Thresholds</h3>
+          <div class="setting-row">
+            <label>Low Stock Threshold:</label>
+            <div>
+              <input type="number" id="lowStockThreshold" value="10" min="1">
+              <button class="btn btn-primary" onclick="saveSettings()">Save</button>
+            </div>
+          </div>
+          <p style="font-size:0.9rem; color:#64748b;">Products with quantity ≤ this number will show as Yellow/Low Stock.</p>
+        </div>
+        <div class="card">
+          <h3>System Info</h3>
+          <p><strong>Total Products:</strong> <span id="totalProducts">0</span></p>
+          <p><strong>Critical Items:</strong> <span id="criticalItems">0</span></p>
+          <p><strong>Role:</strong> <span id="currentRoleDisplay"></span></p>
+        </div>
+      </div>
+    </main>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>

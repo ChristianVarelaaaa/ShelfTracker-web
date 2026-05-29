@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShelfTracker - Stocks</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="appPage" style="display: block;">
+    <header>
+      <h3>ShelfTracker</h3>
+      <div><span id="userRole"></span> | <button onclick="logout()" class="btn btn-danger">Logout</button></div>
+    </header>
+    
+    <nav>
+    
+      <button onclick="window.location.href='index.html'">Dashboard</button>
+      <button class="active" onclick="window.location.href='stocks.html'">Stocks</button>
+      <button onclick="window.location.href='expiry.html'">Expiry</button>
+      <button id="settingsBtn" onclick="window.location.href='settings.html'">Settings</button>
+    </nav>
+    
+    <main>
+      <div id="stocks" class="page">
+        <div style="display:flex; justify-content:space-between; margin-bottom:1rem;">
+          <h2>Stock Management</h2>
+          <button id="addProductBtn" class="btn btn-primary" onclick="openModal()">+ Add Product</button>
+        </div>
+        <div class="card">
+          <table id="productTable">
+            <thead>
+              <tr>
+                <th>Product</th><th>Quantity</th><th>Unit</th><th>Expiry Date</th><th>Status</th><th id="actionHeader">Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="productModal" class="modal">
+    <div class="modal-content">
+      <h3 id="modalTitle">Add Product</h3>
+      <input type="hidden" id="editId">
+      <label>Product Name</label>
+      <input type="text" id="prodName" placeholder="Product Name">
+      <label>Quantity</label>
+      <input type="number" id="prodQty" placeholder="Quantity">
+      <div class="error" id="qtyError"></div>
+      <label>Unit</label>
+      <select id="prodUnit">
+        <option value="pcs">pcs</option>
+        <option value="kg">kg</option>
+        <option value="g">g</option>
+        <option value="L">L</option>
+        <option value="ml">ml</option>
+        <option value="box">box</option>
+        <option value="pack">pack</option>
+        <option value="bottle">bottle</option>
+        <option value="dozen">dozen</option>
+      </select>
+      <label>Expiry Date</label>
+      <input type="date" id="prodExp">
+      <div class="error" id="expError"></div>
+      <div style="margin-top:1rem;">
+        <button class="btn btn-primary" onclick="saveProduct()">Save</button>
+        <button class="btn" onclick="closeModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
