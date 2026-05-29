@@ -1,13 +1,9 @@
 // ==========================================
-// 1. STATE & STORAGE MANAGEMENT
+// 1. STATE & STORAGE MANAGEMENT (SPRING BOOT INTEGRATION)
 // ==========================================
-let products = JSON.parse(localStorage.getItem('shelfTracker_products')) || [];
-let lowStockThreshold = parseInt(localStorage.getItem('shelfTracker_threshold')) || 10;
-
-function saveStateToStorage() {
-  localStorage.setItem('shelfTracker_products', JSON.stringify(products));
-  localStorage.setItem('shelfTracker_threshold', lowStockThreshold);
-}
+const BASE_URL = 'http://localhost:8080/api';
+let products = [];
+let lowStockThreshold = 10;
 
 // ==========================================
 // 2. AUTHENTICATION & ACCESS CONTROL
@@ -15,8 +11,6 @@ function saveStateToStorage() {
 
 function initializeUserSession() {
   const userRole = sessionStorage.getItem("userRole");
-  
-  // If no one is logged in, automatically make them a Customer (No login required)
   if (!userRole) {
     sessionStorage.setItem("isLoggedIn", "true");
     sessionStorage.setItem("userRole", "CUSTOMER");
@@ -36,12 +30,25 @@ function login() {
     return;
   }
 
-  // Set active session variables to Admin status
-  sessionStorage.setItem("isLoggedIn", "true");
-  sessionStorage.setItem("userRole", "ADMIN");
-  sessionStorage.setItem("username", username);
-
-  window.location.href = 'index.html'; 
+  // CONNECTED TO SPRING BOOT AUTHENTICATION PORTAL
+  fetch(`${BASE_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
+  })
+  .then(response => {
+    if (!response.ok) throw new Error("Maling Username o Password.");
+    return response.json();
+  })
+  .then(data => {
+    sessionStorage.setItem("isLoggedIn", "true");
+    sessionStorage.setItem("userRole", data.role); // Sets "ADMIN" or "STAFF" dynamically from backend
+    sessionStorage.setItem("username", data.username);
+    window.location.href = 'index.html'; 
+  })
+  .catch(error => {
+    alert(error.message);
+  });
 }
 
 function logout() { 
@@ -55,23 +62,20 @@ function enforceAccessControl() {
   const currentPage = window.location.pathname.split('/').pop();
   const userRole = sessionStorage.getItem("userRole");
 
-  // 1. Protect Settings page from Customers
   if (currentPage === 'settings.html' && userRole === 'CUSTOMER') {
     window.location.href = 'index.html';
     return;
   }
 
-  // 2. If already logged in as Admin, skip the login page
-  if (currentPage === 'login.html' && userRole === 'ADMIN') {
+  if (currentPage === 'login.html' && (userRole === 'ADMIN' || userRole === 'STAFF')) {
     window.location.href = 'index.html'; 
     return;
   }
 
-  // 3. Dynamically build header depending on active profile role status
   const authHeaderZone = document.getElementById('authHeaderZone');
   if (authHeaderZone && currentPage !== 'login.html') {
     const username = sessionStorage.getItem("username");
-    if (userRole === 'ADMIN') {
+    if (userRole === 'ADMIN' || userRole === 'STAFF') {
       authHeaderZone.innerHTML = `<span>${username} (${userRole})</span> | <button onclick="logout()" class="btn btn-danger" style="padding: 6px 12px; font-size: 14px;">Logout</button>`;
     } else {
       authHeaderZone.innerHTML = `<span>${username} (${userRole})</span> | <button onclick="window.location.href='login.html'" class="btn btn-primary" style="padding: 6px 12px; font-size: 14px;">Admin Login</button>`;
@@ -82,12 +86,9 @@ function enforceAccessControl() {
 function handleRoleVisibility() {
   const userRole = sessionStorage.getItem("userRole");
   
-  if (userRole === 'CUSTOMER') {
+  if (userRole === 'CUSTOMER' || userRole === 'STAFF') {
     const addProductBtn = document.getElementById('addProductBtn');
     if (addProductBtn) addProductBtn.style.display = 'none';
-
-    const actionHeader = document.getElementById('actionHeader');
-    if (actionHeader) actionHeader.style.display = 'none';
 
     const settingsBtn = document.getElementById('settingsBtn');
     if (settingsBtn) settingsBtn.style.display = 'none';
@@ -95,7 +96,7 @@ function handleRoleVisibility() {
 }
 
 // ==========================================
-// 3. DATA RENDERING
+// 3. DATA FETCHING & RENDERING ENGINE
 // ==========================================
 
 function getStatus(qty, exp) { 
@@ -105,12 +106,40 @@ function getStatus(qty, exp) {
   return {color:'green', text:'High Stock'}; 
 }
 
+function loadAllDataFromServer() {
+  // 1. Fetch Complete Inventory List
+  fetch(`${BASE_URL}/products`)
+    .then(res => res.json())
+    .then(data => {
+      products = data;
+      
+      // 2. Fetch Telemetry Dashboard Summary
+      return fetch(`${BASE_URL}/dashboard/summary`);
+    })
+    .then(res => res.json())
+    .then(summaryData => {
+      lowStockThreshold = summaryData.thresholdValue;
+      
+      // Update Numeric Summary Blocks dynamically
+      if (document.getElementById('totalProducts')) {
+        document.getElementById('totalProducts').textContent = summaryData.totalProducts;
+      }
+      if (document.getElementById('criticalItems')) {
+        document.getElementById('criticalItems').textContent = summaryData.criticalItems;
+      }
+      
+      // Render interfaces
+      renderAll();
+    })
+    .catch(err => console.error("Error connecting to backend:", err));
+}
+
 function renderAll() { 
   handleRoleVisibility();
   if (document.querySelector('#productTable tbody')) renderProducts(); 
   if (document.getElementById('alertsList')) renderAlerts(); 
   if (document.querySelector('#expiryTable tbody')) renderExpiry(); 
-  if (document.getElementById('totalProducts')) updateSettingsInfo();
+  if (document.getElementById('lowStockThreshold')) updateSettingsInfo();
 }
 
 function renderProducts() { 
@@ -119,7 +148,7 @@ function renderProducts() {
   const userRole = sessionStorage.getItem("userRole");
   
   if(products.length === 0) {
-    const colSpanValue = userRole === 'ADMIN' ? 6 : 5;
+    const colSpanValue = (userRole === 'ADMIN' || userRole === 'STAFF') ? 6 : 5;
     tbody.innerHTML = `<tr><td colspan="${colSpanValue}" style="text-align:center; padding:2rem; color:#64748b;">No products yet.</td></tr>`;
     return;
   }
@@ -138,6 +167,10 @@ function renderProducts() {
           <button class="btn btn-primary" onclick="editProduct(${p.id})">Edit</button> 
           <button class="btn btn-danger" onclick="deleteProduct(${p.id})">Delete</button>
         </td>` : ''} 
+        ${userRole === 'STAFF' ? `
+        <td> 
+          <button class="btn btn-primary" onclick="quickStockAdjustment(${p.id}, ${p.qty})">Stock-In/Out</button> 
+        </td>` : ''}
       </tr>`; 
   }); 
 }
@@ -173,14 +206,14 @@ function renderExpiry() {
         <td>${p.name}</td> 
         <td>${p.qty} ${p.unit}</td> 
         <td>${p.exp}</td> 
-        <td>${daysLeft} days</td> 
+        <td>${daysLeft <= 0 ? 'Expired' : daysLeft + ' days'}</td> 
         <td><span class="status-dot status-${status.color}"></span>${status.text}</td> 
       </tr>`; 
   }); 
 }
 
 // ==========================================
-// 4. PRODUCT MANAGEMENT (ADMIN ONLY)
+// 4. PRODUCT MANAGEMENT (REST API OPERATION)
 // ==========================================
 
 function openModal() { 
@@ -195,7 +228,6 @@ function openModal() {
   document.getElementById('expError').textContent = ''; 
 }
 
-// Keep your existing closeModal(), editProduct(), saveProduct(), deleteProduct(), saveSettings(), and updateSettingsInfo() below exactly as they were...
 function closeModal() { 
   document.getElementById('productModal').classList.remove('active'); 
 }
@@ -214,41 +246,97 @@ function editProduct(id) {
 function saveProduct() { 
   const id = document.getElementById('editId').value; 
   const name = document.getElementById('prodName').value.trim(); 
-  const qty = document.getElementById('prodQty').value; 
+  const qty = parseInt(document.getElementById('prodQty').value); 
   const unit = document.getElementById('prodUnit').value; 
   const exp = document.getElementById('prodExp').value; 
   
   if(!name) { alert("Product name is required"); return; } 
-  if(isNaN(qty) || qty === '' || qty < 0) { document.getElementById('qtyError').textContent = 'Invalid input, please enter a numeric value'; return; } 
-  if(!exp || new Date(exp) < new Date().setHours(0,0,0,0)) { document.getElementById('expError').textContent = 'Invalid input or Product already expired.'; return; } 
+  if(isNaN(qty) || qty < 0) { document.getElementById('qtyError').textContent = 'Invalid numeric quantity'; return; } 
+  if(!exp) { document.getElementById('expError').textContent = 'Product expiration date is required'; return; } 
   
+  const payload = { name, qty, unit, exp };
+  
+  let url = `${BASE_URL}/products`;
+  let method = 'POST';
+  
+  // Kung may id, ibig sabihin ay UPDATE (PUT) ang gagawin sa backend
   if(id && id !== '') { 
-    const p = products.find(x => x.id == id); 
-    if(p) { p.name = name; p.qty = parseInt(qty); p.unit = unit; p.exp = exp; } 
-  } else { 
-    products.push({id:Date.now(), name, qty:parseInt(qty), unit, exp}); 
-  } 
-  saveStateToStorage(); closeModal(); renderAll(); 
+    url = `${BASE_URL}/products/${id}`;
+    method = 'PUT';
+  }
+  
+  fetch(url, {
+    method: method,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+  .then(res => {
+    if(!res.ok) throw new Error("Failed to save product details.");
+    closeModal();
+    loadAllDataFromServer(); // Reload dynamic updates directly from backend
+  })
+  .catch(err => alert(err.message));
 }
 
 function deleteProduct(id) { 
-  if(confirm("Are you sure you want to delete this product?")) { 
-    products = products.filter(p => p.id !== id); saveStateToStorage(); renderAll(); 
+  if(confirm("Are you sure you want to delete this product from the database?")) { 
+    fetch(`${BASE_URL}/products/${id}`, { method: 'DELETE' })
+      .then(res => {
+         if(!res.ok) throw new Error("Delete restricted.");
+         loadAllDataFromServer();
+      })
+      .catch(err => alert(err.message));
   } 
 }
 
+function quickStockAdjustment(id, currentQty) {
+  const adjustment = prompt("Enter value to add (e.g. 10) or subtract (e.g. -5):");
+  if (!adjustment || isNaN(adjustment)) return;
+  
+  const targetQty = currentQty + parseInt(adjustment);
+  if (targetQty < 0) { alert("Stock cannot drop below zero."); return; }
+  
+  // CONNECTED TO YOUR PATCH REST ENDPOINT FOR CASHIERS
+  fetch(`${BASE_URL}/products/${id}/quantity`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ qty: targetQty })
+  })
+  .then(res => {
+    if(!res.ok) throw new Error("Could not update stock.");
+    loadAllDataFromServer();
+  })
+  .catch(err => alert(err.message));
+}
+
 function saveSettings() { 
-  const newThreshold = document.getElementById('lowStockThreshold').value; 
+  const newThreshold = parseInt(document.getElementById('lowStockThreshold').value); 
   if(isNaN(newThreshold) || newThreshold < 1) { alert("Please enter a valid number"); return; } 
-  lowStockThreshold = parseInt(newThreshold); saveStateToStorage(); alert("Settings saved!"); renderAll(); 
+  
+  // CONNECTED TO YOUR POST THRESHOLD CONFIGURATOR
+  fetch(`${BASE_URL}/dashboard/threshold`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ newThreshold: newThreshold })
+  })
+  .then(res => {
+    if(!res.ok) throw new Error("Failed to update settings.");
+    alert("System dynamic alert configuration updated!");
+    loadAllDataFromServer();
+  })
+  .catch(err => alert(err.message));
 }
 
 function updateSettingsInfo() { 
-  document.getElementById('totalProducts').textContent = products.length; 
-  const criticalCount = products.filter(p => getStatus(p.qty, p.exp).color === 'red').length; 
-  document.getElementById('criticalItems').textContent = criticalCount; 
-  document.getElementById('currentRoleDisplay').textContent = sessionStorage.getItem("userRole"); 
-  document.getElementById('lowStockThreshold').value = lowStockThreshold; 
+  const userRole = sessionStorage.getItem("userRole");
+  document.getElementById('currentRoleDisplay').textContent = userRole; 
+  document.getElementById('lowStockThreshold').value = lowStockThreshold;
+
+  // Show admin registration form only to ADMIN
+  const adminRegSection = document.getElementById('adminRegSection');
+  if (adminRegSection) {
+    adminRegSection.style.display = userRole === 'ADMIN' ? 'block' : 'none';
+  }
 }
 
 // ==========================================
@@ -259,6 +347,34 @@ enforceAccessControl();
 document.addEventListener('DOMContentLoaded', () => {
   const currentPage = window.location.pathname.split('/').pop();
   if (currentPage !== 'login.html') {
-    renderAll();
+    loadAllDataFromServer(); // Pull data directly from server on startup
   }
 });
+
+
+// ==========================================
+// 6. ADMIN REGISTRATION
+// ==========================================
+
+function registerNewAdmin() {
+  const username = document.getElementById('newAdminUsername').value.trim();
+  const password = document.getElementById('newAdminPassword').value;
+
+  if (!username || !password) { alert("Fill in both fields."); return; }
+
+  fetch(`${BASE_URL}/auth/register-admin`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Requesting-Role': sessionStorage.getItem("userRole")
+    },
+    body: JSON.stringify({ username, password })
+  })
+  .then(res => res.json())
+  .then(data => {
+    alert(data.message);
+    document.getElementById('newAdminUsername').value = '';
+    document.getElementById('newAdminPassword').value = '';
+  })
+  .catch(err => alert("Error: " + err.message));
+}
