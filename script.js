@@ -1,3 +1,6 @@
+// Buksan ang script.js at siguraduhing ganito ang link sa itaas:
+const BASE_URL = 'https://shelftracker-production.up.railway.app/api';
+
 // ==========================================
 // 1. STATE & STORAGE MANAGEMENT (SPRING BOOT INTEGRATION)
 // ==========================================
@@ -378,3 +381,4 @@ function registerNewAdmin() {
   })
   .catch(err => alert("Error: " + err.message));
 }
+
