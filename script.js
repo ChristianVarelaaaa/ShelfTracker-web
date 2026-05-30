@@ -19,18 +19,14 @@ function initializeUserSession() {
 }
 
 function login() { 
-  const usernameInput = document.getElementById('username');
-  const passwordInput = document.getElementById('password');
-
-  const username = usernameInput.value.trim();
-  const password = passwordInput.value;
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
 
   if (!username || !password) {
     alert("Please enter both username and password.");
     return;
   }
 
-  // CONNECTED TO SPRING BOOT AUTHENTICATION PORTAL
   fetch(`${BASE_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -41,14 +37,43 @@ function login() {
     return response.json();
   })
   .then(data => {
+    if (data.role !== 'ADMIN' && data.role !== 'STAFF') {
+      throw new Error("Access denied. Admins only.");
+    }
     sessionStorage.setItem("isLoggedIn", "true");
-    sessionStorage.setItem("userRole", data.role); // Sets "ADMIN" or "STAFF" dynamically from backend
+    sessionStorage.setItem("userRole", data.role);
     sessionStorage.setItem("username", data.username);
     window.location.href = 'index.html'; 
   })
   .catch(error => {
     alert(error.message);
   });
+}
+
+function registerAccount() {
+  const newUsername = document.getElementById('newUsername').value.trim();
+  const newPassword = document.getElementById('newPassword').value;
+
+  if (!newUsername || !newPassword) {
+    alert("Please fill in both fields."); return;
+  }
+
+  fetch(`${BASE_URL}/auth/register`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Requesting-Role': 'ADMIN'
+    },
+    body: JSON.stringify({ username: newUsername, password: newPassword, role: 'ADMIN' })
+  })
+  .then(res => res.json())
+  .then(data => {
+    alert(data.message);
+    if (data.message === 'Account registered successfully!') {
+      window.location.href = 'login.html';
+    }
+  })
+  .catch(err => alert("Error: " + err.message));
 }
 
 function logout() { 
@@ -67,13 +92,15 @@ function enforceAccessControl() {
     return;
   }
 
-  if (currentPage === 'login.html' && (userRole === 'ADMIN' || userRole === 'STAFF')) {
-    window.location.href = 'index.html'; 
+  // Redirect already logged-in admins away from login/signup
+  if ((currentPage === 'login.html' || currentPage === 'signup.html') &&
+      (userRole === 'ADMIN' || userRole === 'STAFF')) {
+    window.location.href = 'index.html';
     return;
   }
 
   const authHeaderZone = document.getElementById('authHeaderZone');
-  if (authHeaderZone && currentPage !== 'login.html') {
+  if (authHeaderZone && currentPage !== 'login.html' && currentPage !== 'signup.html') {
     const username = sessionStorage.getItem("username");
     if (userRole === 'ADMIN' || userRole === 'STAFF') {
       authHeaderZone.innerHTML = `<span>${username} (${userRole})</span> | <button onclick="logout()" class="btn btn-danger" style="padding: 6px 12px; font-size: 14px;">Logout</button>`;
@@ -107,20 +134,16 @@ function getStatus(qty, exp) {
 }
 
 function loadAllDataFromServer() {
-  // 1. Fetch Complete Inventory List
   fetch(`${BASE_URL}/products`)
     .then(res => res.json())
     .then(data => {
       products = data;
-      
-      // 2. Fetch Telemetry Dashboard Summary
       return fetch(`${BASE_URL}/dashboard/summary`);
     })
     .then(res => res.json())
     .then(summaryData => {
       lowStockThreshold = summaryData.thresholdValue;
       
-      // Update Numeric Summary Blocks dynamically
       if (document.getElementById('totalProducts')) {
         document.getElementById('totalProducts').textContent = summaryData.totalProducts;
       }
@@ -128,7 +151,6 @@ function loadAllDataFromServer() {
         document.getElementById('criticalItems').textContent = summaryData.criticalItems;
       }
       
-      // Render interfaces
       renderAll();
     })
     .catch(err => console.error("Error connecting to backend:", err));
@@ -259,7 +281,6 @@ function saveProduct() {
   let url = `${BASE_URL}/products`;
   let method = 'POST';
   
-  // Kung may id, ibig sabihin ay UPDATE (PUT) ang gagawin sa backend
   if(id && id !== '') { 
     url = `${BASE_URL}/products/${id}`;
     method = 'PUT';
@@ -273,7 +294,7 @@ function saveProduct() {
   .then(res => {
     if(!res.ok) throw new Error("Failed to save product details.");
     closeModal();
-    loadAllDataFromServer(); // Reload dynamic updates directly from backend
+    loadAllDataFromServer();
   })
   .catch(err => alert(err.message));
 }
@@ -296,7 +317,6 @@ function quickStockAdjustment(id, currentQty) {
   const targetQty = currentQty + parseInt(adjustment);
   if (targetQty < 0) { alert("Stock cannot drop below zero."); return; }
   
-  // CONNECTED TO YOUR PATCH REST ENDPOINT FOR CASHIERS
   fetch(`${BASE_URL}/products/${id}/quantity`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
@@ -313,7 +333,6 @@ function saveSettings() {
   const newThreshold = parseInt(document.getElementById('lowStockThreshold').value); 
   if(isNaN(newThreshold) || newThreshold < 1) { alert("Please enter a valid number"); return; } 
   
-  // CONNECTED TO YOUR POST THRESHOLD CONFIGURATOR
   fetch(`${BASE_URL}/dashboard/threshold`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -331,12 +350,6 @@ function updateSettingsInfo() {
   const userRole = sessionStorage.getItem("userRole");
   document.getElementById('currentRoleDisplay').textContent = userRole; 
   document.getElementById('lowStockThreshold').value = lowStockThreshold;
-
-  // Show admin registration form only to ADMIN
-  const adminRegSection = document.getElementById('adminRegSection');
-  if (adminRegSection) {
-    adminRegSection.style.display = userRole === 'ADMIN' ? 'block' : 'none';
-  }
 }
 
 // ==========================================
@@ -346,35 +359,7 @@ enforceAccessControl();
 
 document.addEventListener('DOMContentLoaded', () => {
   const currentPage = window.location.pathname.split('/').pop();
-  if (currentPage !== 'login.html') {
-    loadAllDataFromServer(); // Pull data directly from server on startup
+  if (currentPage !== 'login.html' && currentPage !== 'signup.html') {
+    loadAllDataFromServer();
   }
 });
-
-
-// ==========================================
-// 6. ADMIN REGISTRATION
-// ==========================================
-
-function registerNewAdmin() {
-  const username = document.getElementById('newAdminUsername').value.trim();
-  const password = document.getElementById('newAdminPassword').value;
-
-  if (!username || !password) { alert("Fill in both fields."); return; }
-
-  fetch(`${BASE_URL}/auth/register-admin`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Requesting-Role': sessionStorage.getItem("userRole")
-    },
-    body: JSON.stringify({ username, password })
-  })
-  .then(res => res.json())
-  .then(data => {
-    alert(data.message);
-    document.getElementById('newAdminUsername').value = '';
-    document.getElementById('newAdminPassword').value = '';
-  })
-  .catch(err => alert("Error: " + err.message));
-}
