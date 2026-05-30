@@ -1,3 +1,6 @@
+// Buksan ang script.js at siguraduhing ganito ang link sa itaas:
+const BASE_URL = 'https://shelftracker-production.up.railway.app/api';
+
 // ==========================================
 // 1. STATE & STORAGE MANAGEMENT (SPRING BOOT INTEGRATION)
 // ==========================================
@@ -359,7 +362,35 @@ enforceAccessControl();
 
 document.addEventListener('DOMContentLoaded', () => {
   const currentPage = window.location.pathname.split('/').pop();
-  if (currentPage !== 'login.html' && currentPage !== 'signup.html') {
-    loadAllDataFromServer();
+  if (currentPage !== 'login.html') {
+    loadAllDataFromServer(); // Pull data directly from server on startup
   }
 });
+
+
+// ==========================================
+// 6. ADMIN REGISTRATION
+// ==========================================
+
+function registerNewAdmin() {
+  const username = document.getElementById('newAdminUsername').value.trim();
+  const password = document.getElementById('newAdminPassword').value;
+
+  if (!username || !password) { alert("Fill in both fields."); return; }
+
+  fetch(`${BASE_URL}/auth/register-admin`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Requesting-Role': sessionStorage.getItem("userRole")
+    },
+    body: JSON.stringify({ username, password })
+  })
+  .then(res => res.json())
+  .then(data => {
+    alert(data.message);
+    document.getElementById('newAdminUsername').value = '';
+    document.getElementById('newAdminPassword').value = '';
+  })
+  .catch(err => alert("Error: " + err.message));
+}
