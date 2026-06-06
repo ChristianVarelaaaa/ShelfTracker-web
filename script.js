@@ -19,59 +19,36 @@ function initializeUserSession() {
   }
 }
 
-function login() {
-    // 1. Get elements by their HTML id tags
-    const usernameField = document.getElementById('username');
-    const passwordField = document.getElementById('password');
+function login() { 
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
 
-    if (!usernameField || !passwordField) {
-        alert("System Error: HTML input elements are missing IDs.");
-        return;
+  if (!username || !password) {
+    alert("Please enter both username and password.");
+    return;
+  }
+
+  fetch(`${BASE_URL}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
+  })
+  .then(response => {
+    if (!response.ok) throw new Error("Maling Username o Password.");
+    return response.json();
+  })
+  .then(data => {
+    if (data.role !== 'ADMIN' && data.role !== 'STAFF') {
+      throw new Error("Access denied. Admins only.");
     }
-
-    const username = usernameField.value.trim();
-    const password = passwordField.value;
-
-    if (!username || !password) {
-        alert("Please enter both username and password.");
-        return;
-    }
-
-    // 2. Ensure your BASE_URL doesn't end with a slash so this joins cleanly
-    const cleanUrl = BASE_URL.endsWith('/') ? BASE_URL.slice(0, -1) : BASE_URL;
-
-    fetch(${cleanUrl}/api/auth/login, {
-        method: 'POST',
-        headers: { 
-            'Content-Type': 'application/json' 
-        },
-        // 3. Exact matching JSON fields expected by backend map keys
-        body: JSON.stringify({ 
-            username: username, 
-            password: password 
-        })
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error("Maling Username o Password.");
-        }
-        return response.json();
-    })
-    .then(data => {
-        // Successful login block
-        alert(data.message || "Login successful!");
-
-        // Save active session items
-        sessionStorage.setItem("isLoggedIn", "true");
-        sessionStorage.setItem("userRole", data.role);
-        sessionStorage.setItem("username", data.username);
-        
-        // Redirect to dashboard layout page
-        window.location.href = 'index.html';
-    })
-    .catch(error => {
-        alert(error.message);
-    });
+    sessionStorage.setItem("isLoggedIn", "true");
+    sessionStorage.setItem("userRole", data.role);
+    sessionStorage.setItem("username", data.username);
+    window.location.href = 'index.html'; 
+  })
+  .catch(error => {
+    alert(error.message);
+  });
 }
 
 function registerAccount() {
