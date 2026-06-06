@@ -1,4 +1,3 @@
-const BASE_URL = 'https://github.com/ChristianVarelaaaa/ShelfTracker-Backend.git.com/api'; // 
 
 // ==========================================
 // 1. STATE & STORAGE MANAGEMENT (SPRING BOOT INTEGRATION)
