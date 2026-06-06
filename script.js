@@ -291,11 +291,11 @@ function saveProduct() {
   
   const payload = { name, qty, unit, exp };
   
-  let url = `${BASE_URL}/products`;
+  let url = `${BASE_URL}/api/products`;
   let method = 'POST';
   
   if(id && id !== '') { 
-    url = `${BASE_URL}/products/${id}`;
+    url = `${BASE_URL}/api/products/${id}`;
     method = 'PUT';
   }
   
@@ -314,7 +314,7 @@ function saveProduct() {
 
 function deleteProduct(id) { 
   if(confirm("Are you sure you want to delete this product from the database?")) { 
-    fetch(`${BASE_URL}/products/${id}`, { method: 'DELETE' })
+    fetch(`${BASE_URL}/api/products/${id}`, { method: 'DELETE' })
       .then(res => {
          if(!res.ok) throw new Error("Delete restricted.");
          loadAllDataFromServer();
@@ -330,7 +330,7 @@ function quickStockAdjustment(id, currentQty) {
   const targetQty = currentQty + parseInt(adjustment);
   if (targetQty < 0) { alert("Stock cannot drop below zero."); return; }
   
-  fetch(`${BASE_URL}/products/${id}/quantity`, {
+  fetch(`${BASE_URL}/api/products/${id}/quantity`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ qty: targetQty })
