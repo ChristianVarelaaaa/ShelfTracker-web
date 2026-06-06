@@ -78,10 +78,11 @@ function registerAccount() {
     }
 })
 .then(data => {
-    alert(data.message || data);
+    // This turns the [object Object] into readable text in the alert box
+    alert(JSON.stringify(data));
     
-    // Check if message contains success text safely
-    if (data.message && data.message.includes('successfully')) {
+    // Check if the backend message or raw text indicates success
+    if (JSON.stringify(data).toLowerCase().includes('success') || data.message === 'Account registered successfully!') {
         window.location.href = 'login.html';
     }
 })
