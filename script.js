@@ -59,7 +59,7 @@ function registerAccount() {
     alert("Please fill in both fields."); return;
   }
 
-  fetch(`${BASE_URL}auth/register`, {
+  fetch(`${BASE_URL}/auth/register`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
