@@ -289,7 +289,7 @@ function saveProduct() {
   if(isNaN(qty) || qty < 0) { document.getElementById('qtyError').textContent = 'Invalid numeric quantity'; return; } 
   if(!exp) { document.getElementById('expError').textContent = 'Product expiration date is required'; return; } 
   
-  const payload = { name, quantity: qty, unit, expiryDate: exp };
+  const payload = { name, qty, unit, exp };
   
   let url = `${BASE_URL}/api/products`;
   let method = 'POST';
