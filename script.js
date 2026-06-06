@@ -19,48 +19,36 @@ function initializeUserSession() {
   }
 }
 
+function login() { 
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
 
-function login() {
-    const username = document.getElementById('username').value.trim();
-    const password = document.getElementById('password').value;
+  if (!username || !password) {
+    alert("Please enter both username and password.");
+    return;
+  }
 
-    if (!username || !password) {
-        alert("Please enter both username and password.");
-        return;
+  fetch(`${BASE_URL}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
+  })
+  .then(response => {
+    if (!response.ok) throw new Error("Maling Username o Password.");
+    return response.json();
+  })
+  .then(data => {
+    if (data.role !== 'ADMIN' && data.role !== 'STAFF') {
+      throw new Error("Access denied. Admins only.");
     }
-
-    // 1. Correct URL path including /api
-    fetch(${BASE_URL}/api/auth/login, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error("Maling Username o Password.");
-        }
-        return response.json();
-    })
-    .then(data => {
-        // 2. data.message will match your backend's k1: "message" 
-        alert(data.message || "Login successful!");
-
-        // 3. Match backend payload fields directly (data.role and data.username)
-        if (data.role !== 'ADMIN' && data.role !== 'STAFF') {
-            throw new Error("Access denied. Admins only.");
-        }
-
-        // 4. Save session elements using valid JSON keys
-        sessionStorage.setItem("isLoggedIn", "true");
-        sessionStorage.setItem("userRole", data.role);
-        sessionStorage.setItem("username", data.username);
-        
-        // Go straight to your application home base
-        window.location.href = 'index.html';
-    })
-    .catch(error => {
-        alert(error.message);
-    });
+    sessionStorage.setItem("isLoggedIn", "true");
+    sessionStorage.setItem("userRole", data.role);
+    sessionStorage.setItem("username", data.username);
+    window.location.href = 'index.html'; 
+  })
+  .catch(error => {
+    alert(error.message);
+  });
 }
 
 function registerAccount() {
