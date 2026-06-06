@@ -67,13 +67,24 @@ function registerAccount() {
     },
     body: JSON.stringify({ username: newUsername, password: newPassword, role: 'ADMIN' })
   })
-  .then(res => res.json())
-  .then(data => {
-    alert(data.message);
-    if (data.message === 'Account registered successfully!') {
-      window.location.href = 'login.html';
+.then(async res => {
+    // Check if the response is JSON or plain text
+    const contentType = res.headers.get("content-type");
+    if (contentType && contentType.includes("application/json")) {
+        return res.json();
+    } else {
+        const textData = await res.text();
+        return { message: textData }; // Wrap plain text in a message object
     }
-  })
+})
+.then(data => {
+    alert(data.message || data);
+    
+    // Check if message contains success text safely
+    if (data.message && data.message.includes('successfully')) {
+        window.location.href = 'login.html';
+    }
+})
   .catch(err => alert("Error: " + err.message));
 }
 
