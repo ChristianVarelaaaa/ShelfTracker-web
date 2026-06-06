@@ -1,10 +1,9 @@
-// Buksan ang script.js at siguraduhing ganito ang link sa itaas:
-const BASE_URL = 'https://shelftracker-production.up.railway.app/api';
+const BASE_URL = 'https://github.com/ChristianVarelaaaa/ShelfTracker-Backend.git.com/api'; // 
 
 // ==========================================
 // 1. STATE & STORAGE MANAGEMENT (SPRING BOOT INTEGRATION)
 // ==========================================
-const BASE_URL = 'http://localhost:8080/api';
+const BASE_URL = 'https://shelftracker-backend.onrender.com/';
 let products = [];
 let lowStockThreshold = 10;
 
