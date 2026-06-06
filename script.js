@@ -2,7 +2,7 @@
 // ==========================================
 // 1. STATE & STORAGE MANAGEMENT (SPRING BOOT INTEGRATION)
 // ==========================================
-const BASE_URL = 'https://shelftracker-backend.onrender.com/';
+const BASE_URL = 'https://shelftracker-backend.onrender.com';
 let products = [];
 let lowStockThreshold = 10;
 
